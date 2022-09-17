@@ -3,8 +3,8 @@
     "author": "Moisés Maia",
     "classifications": ["Web", "WebAPI"],
     "identity": "RestApi",
-    "name": "moisesduartem's REST API Template",
-    "shortName": "restapi",
+    "name": "moisesduartem's Dapper REST API Template",
+    "shortName": "dapper-api",
     "sourceName": "RestApi",
     "tags": {
         "language": "C#",
