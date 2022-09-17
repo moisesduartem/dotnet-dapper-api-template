@@ -61,15 +61,12 @@ namespace RestApi.Identity.Services
                 string? userId = 
                     claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
 
-
                 var user = await _userRepository.FindByIdAsync(userId);
 
-                if (user is null)
+                if (user is not null)
                 {
-                    return null;
+                    return _mapper.Map<UserProfileDTO>(user);
                 }
-
-                return _mapper.Map<UserProfileDTO>(user);
             }
 
             return null;
