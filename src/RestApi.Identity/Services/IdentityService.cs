@@ -35,6 +35,8 @@ namespace RestApi.Identity.Services
         {
             string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
+            // replace with new user references
+
             var mailRequest = new MailRequest
             {
                 ToEmail = user.Email,
@@ -51,6 +53,8 @@ namespace RestApi.Identity.Services
             {
                 var user = await _userManager.GetUserAsync(_httpContextAccessor?.HttpContext?.User);
 
+                // replace with new user references
+
                 return new LoggedUserDTO
                 {
                     Id = user.Id,
@@ -64,6 +68,8 @@ namespace RestApi.Identity.Services
         public async Task<LoginDTO> LoginAsync(LoginQuery query)
         {
             var signInResult = await _signInManager.PasswordSignInAsync(query.Email, query.Password, false, true);
+
+            // replace with new user references
 
             if (signInResult.Succeeded)
             {
@@ -104,6 +110,8 @@ namespace RestApi.Identity.Services
 
                 await _userManager.SetLockoutEnabledAsync(identityUser, false);
 
+                // replace with new user references
+
                 return Result.Create();
             }
 
@@ -115,6 +123,8 @@ namespace RestApi.Identity.Services
             var user = await _userManager.FindByEmailAsync(email);
 
             var claims = await GetClaimsAsync(user);
+
+            // replace with new user references
 
             var expirationDate = DateTime.Now.AddSeconds(_jwtOptions.ExpirationInSeconds);
 
@@ -142,6 +152,8 @@ namespace RestApi.Identity.Services
             var claims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
 
+            // replace with new user references
+
             claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()));
             claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
             claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
@@ -158,12 +170,15 @@ namespace RestApi.Identity.Services
 
         public Task<RestApiUser> FindUserByEmailAsync(string email)
         {
+            // replace with new user references
             return _userManager.FindByEmailAsync(email);
         }
 
         public async Task<Result> ConfirmEmailAsync(RestApiUser user, string token)
         {
             var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            // replace with new user references
 
             if (result.Succeeded)
             {
@@ -176,6 +191,8 @@ namespace RestApi.Identity.Services
         public async Task<Result> ForgotPasswordAsync(RestApiUser user, CancellationToken cancellationToken)
         {
             string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // replace with new user references
 
             var mailRequest = new MailRequest
             {
@@ -196,6 +213,8 @@ namespace RestApi.Identity.Services
         public async Task<Result> ResetPasswordAsync(RestApiUser user, string token, string password)
         {
             var result = await _userManager.ResetPasswordAsync(user, token, password);
+
+            // replace with new user references
 
             if (result.Succeeded)
             {

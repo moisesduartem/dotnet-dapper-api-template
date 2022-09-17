@@ -12,7 +12,6 @@ using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Filters;
 using RestApi.Identity.Extensions;
 using RestApi.Identity.Services;
-using RestApi.Persistence.Context;
 using RestApi.Persistence.Repositories;
 
 namespace RestApi.Extensions
@@ -98,20 +97,9 @@ namespace RestApi.Extensions
             return services;
         }
 
-        public static IServiceCollection AddIdentityAndEntityFramework(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddJWTConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddJsonWebTokenAuthentication(configuration);
-
-            services.AddDefaultIdentity<RestApiUser>()
-                    .AddRoles<RestApiRole>()
-                    .AddEntityFrameworkStores<RestApiContext>()
-                    .AddDefaultTokenProviders();
-
-            services.AddDbContext<RestApiContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
-            );
-
-            return services;
+            return services.AddJsonWebTokenAuthentication(configuration);
         }
 
         public static IServiceCollection AddFluentValidationConfiguration(this IServiceCollection services)
