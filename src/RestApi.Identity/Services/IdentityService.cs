@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using RestApi.Application.Models;
@@ -22,13 +23,15 @@ namespace RestApi.Identity.Services
         private readonly JwtOptions _jwtOptions;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMailService _mailService;
+        private readonly IMapper _mapper;
 
-        public IdentityService(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IMailService mailService)
+        public IdentityService(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IMailService mailService, IMapper mapper)
         {
             _userRepository = userRepository;
             _jwtOptions = jwtOptions.Value;
             _httpContextAccessor = httpContextAccessor;
             _mailService = mailService;
+            _mapper = mapper;
         }
 
         private async Task SendVerificationEmailAsync(RestApiUser user, CancellationToken cancellationToken)
@@ -49,7 +52,7 @@ namespace RestApi.Identity.Services
             await _mailService.SendAsync(mailRequest, cancellationToken);
         }
 
-        public async Task<LoggedUserDTO?> GetLoggedUserAsync()
+        public async Task<UserProfileDTO?> GetLoggedUserAsync()
         {
             if (_httpContextAccessor.HttpContext is not null)
             {
@@ -58,13 +61,15 @@ namespace RestApi.Identity.Services
                 string? userId = 
                     claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                string? userEmail = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
 
-                return new LoggedUserDTO
+                var user = await _userRepository.FindByIdAsync(userId);
+
+                if (user is null)
                 {
-                    Id = new Guid(userId),
-                    Email = userEmail
-                };
+                    return null;
+                }
+
+                return _mapper.Map<UserProfileDTO>(user);
             }
 
             return null;

@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
-using Microsoft.Data.SqlClient;
 using RestApi.Domain.V1.Aggregates.Users.Entities;
 using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Persistence.Context;
@@ -33,6 +32,18 @@ namespace RestApi.Persistence.Repositories
 
             using var connection = _context.CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
+        }
+
+        public async Task<User> FindByIdAsync(string userId)
+        {
+            string sql = @"
+                SELECT u.Id, u.FirstName, u.LastName, u.Email, u.Birthdate
+                FROM Users u
+                WHERE u.Id = @Id
+            ";
+
+            using var connection = _context.CreateConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Id = userId });
         }
 
         public async Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id)

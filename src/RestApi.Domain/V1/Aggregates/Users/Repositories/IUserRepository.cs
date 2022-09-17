@@ -7,6 +7,7 @@ namespace RestApi.Domain.V1.Aggregates.Users.Repositories
     {
         Task AddAsync(User user, CancellationToken cancellationToken);
         Task<User> FindByEmailAsync(string email);
+        Task<User> FindByIdAsync(string userId);
         Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id);
     }
 }

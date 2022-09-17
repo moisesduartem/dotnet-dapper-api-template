@@ -10,6 +10,8 @@ namespace RestApi.Infra.Profiles
         {
             CreateMap<User, LoggedUserDTO>();
 
+            CreateMap<User, UserProfileDTO>();
+
             CreateMap<User, LoginDTO>()
                 .ForMember(d => d.User, cfg => cfg.MapFrom(x => x))
                 .ForMember(d => d.Token, cfg => cfg.Ignore());
