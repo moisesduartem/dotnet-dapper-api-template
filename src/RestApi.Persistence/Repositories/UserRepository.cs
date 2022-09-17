@@ -23,23 +23,29 @@ namespace RestApi.Persistence.Repositories
             await connection.InsertAsync(user);
         }
 
-        public Task<User> FindByEmailAndPasswordAsync(string email, string hash)
+        public async Task<User> FindByEmailAsync(string email)
         {
+            string sql = @"
+                SELECT u.Id, u.FirstName, u.LastName, u.Email, u.PasswordHash
+                FROM Users u
+                WHERE u.Email = @Email
+            ";
+
             using var connection = _context.CreateConnection();
+            return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
 
-        public Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id)
+        public async Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id)
         {
-            using var connection = _context.CreateConnection();
-
             string sql = @"
-                SELECT [r].[Name] FROM [UsersRoles] [ur] 
-                INNER JOIN [Roles] [r] ON [ur].[RoleId] = [r].[Id] 
-                INNER JOIN [Users] [u] ON [ur].[UserId] = [u].[Id] 
-                WHERE [u].[Id] = @UserId
-                ORDER BY [r].[Name] ASC";
+                SELECT r.Name FROM UsersRoles ur 
+                INNER JOIN Roles r ON ur.RoleId = r.Id 
+                INNER JOIN Users u ON ur.UserId = u.Id 
+                WHERE u.Id = @UserId
+                ORDER BY r.Name ASC";
 
-            return connection.QueryAsync<string>(sql, new SqlParameter("UserId", id));
+            using var connection = _context.CreateConnection();
+            return await connection.QueryAsync<string>(sql, new { UserId = id });
         }
     }
 }

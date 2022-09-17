@@ -49,24 +49,23 @@ namespace RestApi.Identity.Services
             await _mailService.SendAsync(mailRequest, cancellationToken);
         }
 
-        public Task<LoggedUserDTO?> GetLoggedUserAsync()
+        public async Task<LoggedUserDTO?> GetLoggedUserAsync()
         {
-            //if (_httpContextAccessor.HttpContext is not null)
-            //{
-            //    //var user = await _userManager.GetUserAsync(_httpContextAccessor?.HttpContext?.User);
+            if (_httpContextAccessor.HttpContext is not null)
+            {
+                var claimsPrincipal = _httpContextAccessor?.HttpContext?.User;
 
-            //    // replace with new user references
+                string? userId = 
+                    claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            //    var user = new { Id = new Guid(), Email = "askdjaskda" };
+                string? userEmail = claimsPrincipal.FindFirstValue(ClaimTypes.Name);
 
-            //    LoggedUserDTO? dto = new LoggedUserDTO
-            //    {
-            //        Id = user.Id,
-            //        Email = user.Email
-            //    };
-
-            //    return Task.FromResult(dto);
-            //}
+                return new LoggedUserDTO
+                {
+                    Id = new Guid(userId),
+                    Email = userEmail
+                };
+            }
 
             return null;
         }
@@ -75,9 +74,7 @@ namespace RestApi.Identity.Services
         {
             var hasher = new PasswordHasher<User?>();
 
-            string hash = hasher.HashPassword(null, query.Password);
-
-            var user = await _userRepository.FindByEmailAndPasswordAsync(query.Email, hash);
+            var user = await _userRepository.FindByEmailAsync(query.Email);
 
             if (user is null)
             {
@@ -86,10 +83,32 @@ namespace RestApi.Identity.Services
                 result.AddError("Invalid Credentials");
                 
                 return result;
-                
             }
 
-            return await GenerateJsonWebTokenAsync(user);
+            var hashVerification = 
+                hasher.VerifyHashedPassword(user, user.PasswordHash, query.Password);
+
+            if (hashVerification is not PasswordVerificationResult.Success)
+            {
+                var result = new LoginDTO();
+
+                result.AddError("Invalid Credentials");
+
+                return result;
+            }
+
+            var expirationDate = DateTime.Now.AddSeconds(_jwtOptions.ExpirationInSeconds);
+
+            var claims = await GetClaimsAsync(user);
+
+            string token = GenerateJsonWebTokenAsync(claims, expirationDate);
+
+            return new LoginDTO
+            {
+                User = new LoggedUserDTO { Id = user.Id, Email = user.Email },
+                Token = token,
+                ExpirationDate = expirationDate,
+            };
         }
 
         public async Task<Result> RegisterAsync(RegisterUserCommand command, CancellationToken cancellationToken)
@@ -110,20 +129,10 @@ namespace RestApi.Identity.Services
             await _userRepository.AddAsync(user, cancellationToken);
 
             return Result.Create();
-
-            //await SendVerificationEmailAsync(identityUser, cancellationToken);
-
-            //await _userManager.SetLockoutEnabledAsync(identityUser, false);
         }
 
-        private async Task<LoginDTO> GenerateJsonWebTokenAsync(User user)
+        private string GenerateJsonWebTokenAsync(IList<Claim> claims, DateTime expirationDate)
         {
-            //var user = await _userManager.FindByEmailAsync(email);
-
-            var claims = await GetClaimsAsync(user);
-
-            var expirationDate = DateTime.Now.AddSeconds(_jwtOptions.ExpirationInSeconds);
-
             var jwt = new JwtSecurityToken(
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
@@ -133,14 +142,7 @@ namespace RestApi.Identity.Services
                 signingCredentials: _jwtOptions.SigningCredentials
             );
 
-            var token = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-            return new LoginDTO
-            {
-                User = new LoggedUserDTO { Id = user.Id, Email = user.Email },
-                Token = token,
-                ExpirationDate = expirationDate,
-            };
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
         private async Task<IList<Claim>> GetClaimsAsync(User user)

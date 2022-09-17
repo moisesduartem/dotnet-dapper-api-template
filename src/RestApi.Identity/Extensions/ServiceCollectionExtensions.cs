@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -29,15 +28,6 @@ namespace RestApi.Identity.Extensions
                     new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha512);
                 options.ExpirationInSeconds = 
                     int.Parse(jwtOptionsSection[nameof(JwtOptions.ExpirationInSeconds)] ?? "0");
-            });
-
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 6;
             });
 
             var tokenValidationParameters = new TokenValidationParameters

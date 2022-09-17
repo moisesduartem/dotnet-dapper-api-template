@@ -10,6 +10,11 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
         public DateTime Birthdate { get; private set; }
         public string PasswordHash { get; private set; }
 
+        public User()
+        {
+
+        }
+
         public User(string firstName, string lastName, string email, DateTime birthdate)
         {
             FirstName = firstName;
