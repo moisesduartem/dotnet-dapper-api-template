@@ -11,6 +11,7 @@ using RestApi.Application.V1.Shared;
 using RestApi.Domain.V1.Aggregates.Users.Entities;
 using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Identity.Configuration;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace RestApi.Identity.Services
@@ -72,30 +73,23 @@ namespace RestApi.Identity.Services
 
         public async Task<LoginDTO> LoginAsync(LoginQuery query)
         {
-            //var signInResult = await _signInManager.PasswordSignInAsync(query.Email, query.Password, false, true);
+            var hasher = new PasswordHasher<User?>();
 
-            // replace with new user references
+            string hash = hasher.HashPassword(null, query.Password);
 
-            if (true)
+            var user = await _userRepository.FindByEmailAndPasswordAsync(query.Email, hash);
+
+            if (user is null)
             {
-                return await GenerateJsonWebTokenAsync(query.Email);
+                var result = new LoginDTO();
+                
+                result.AddError("Invalid Credentials");
+                
+                return result;
+                
             }
 
-            var result = new LoginDTO();
-
-            //if (signInResult.IsLockedOut)
-            //    result.AddError("This account is blocked");
-
-            //else if (signInResult.IsNotAllowed)
-            //    result.AddError("This account is not allow to login");
-
-            //else if (signInResult.RequiresTwoFactor)
-            //    result.AddError("It is necessary to confirm the login at your second device");
-
-            //else
-            //    result.AddError("Invalid credentials");
-
-            return result;
+            return await GenerateJsonWebTokenAsync(user);
         }
 
         public async Task<Result> RegisterAsync(RegisterUserCommand command, CancellationToken cancellationToken)
@@ -122,60 +116,52 @@ namespace RestApi.Identity.Services
             //await _userManager.SetLockoutEnabledAsync(identityUser, false);
         }
 
-        private Task<LoginDTO> GenerateJsonWebTokenAsync(string email)
+        private async Task<LoginDTO> GenerateJsonWebTokenAsync(User user)
         {
             //var user = await _userManager.FindByEmailAsync(email);
 
-            //var claims = await GetClaimsAsync(user);
+            var claims = await GetClaimsAsync(user);
 
-            // replace with new user references
+            var expirationDate = DateTime.Now.AddSeconds(_jwtOptions.ExpirationInSeconds);
 
-            return Task.FromResult(new LoginDTO());
+            var jwt = new JwtSecurityToken(
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
+                claims: claims,
+                notBefore: DateTime.Now,
+                expires: expirationDate,
+                signingCredentials: _jwtOptions.SigningCredentials
+            );
 
-            //var expirationDate = DateTime.Now.AddSeconds(_jwtOptions.ExpirationInSeconds);
+            var token = new JwtSecurityTokenHandler().WriteToken(jwt);
 
-            //var jwt = new JwtSecurityToken(
-            //    issuer: _jwtOptions.Issuer,
-            //    audience: _jwtOptions.Audience,
-            //    claims: claims,
-            //    notBefore: DateTime.Now,
-            //    expires: expirationDate,
-            //    signingCredentials: _jwtOptions.SigningCredentials
-            //);
-
-            //var token = new JwtSecurityTokenHandler().WriteToken(jwt);
-
-            //return new LoginDTO
-            //{
-            //    User = new LoggedUserDTO { Id = user.Id, Email = user.Email },
-            //    Token = token,
-            //    ExpirationDate = expirationDate,
-            //};
+            return new LoginDTO
+            {
+                User = new LoggedUserDTO { Id = user.Id, Email = user.Email },
+                Token = token,
+                ExpirationDate = expirationDate,
+            };
         }
 
-        private Task<IList<Claim>> GetClaimsAsync(RestApiUser user)
+        private async Task<IList<Claim>> GetClaimsAsync(User user)
         {
-            //var claims = await _userManager.GetClaimsAsync(user);
-            //var roles = await _userManager.GetRolesAsync(user);
+            var roles = await _userRepository.GetRolesByUserIdAsync(user.Id);
 
-            // replace with new user references
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Nbf, DateTime.Now.ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToString())
+            };
 
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Nbf, DateTime.Now.ToString()));
-            //claims.Add(new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToString()));
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim("role", role));
+            }
 
-            //foreach (var role in roles)
-            //{
-            //    claims.Add(new Claim("role", role));
-            //}
-
-            //return claims;
-
-            IList<Claim> claims = new List<Claim>();
-
-            return Task.FromResult(claims);
+            return claims;
         }
 
         public Task<RestApiUser> FindUserByEmailAsync(string email)
