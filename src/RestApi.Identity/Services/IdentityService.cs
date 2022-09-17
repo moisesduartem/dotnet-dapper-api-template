@@ -34,7 +34,7 @@ namespace RestApi.Identity.Services
             _mapper = mapper;
         }
 
-        private async Task SendVerificationEmailAsync(RestApiUser user, CancellationToken cancellationToken)
+        private async Task SendVerificationEmailAsync(User user, CancellationToken cancellationToken)
         {
             //string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
@@ -168,14 +168,12 @@ namespace RestApi.Identity.Services
             return claims;
         }
 
-        public Task<RestApiUser> FindUserByEmailAsync(string email)
+        public Task<User> FindUserByEmailAsync(string email)
         {
-            // replace with new user references
-            //return _userManager.FindByEmailAsync(email);
-            return Task.FromResult(new RestApiUser());
+            return _userRepository.FindByEmailAsync(email);
         }
 
-        public Task<Result> ConfirmEmailAsync(RestApiUser user, string token)
+        public Task<Result> ConfirmEmailAsync(User user, string token)
         {
             //var result = await _userManager.ConfirmEmailAsync(user, token);
 
@@ -189,7 +187,7 @@ namespace RestApi.Identity.Services
             //return Result.Create().Error(result.Errors.Select(x => x.Description));
         }
 
-        public async Task<Result> ForgotPasswordAsync(RestApiUser user, CancellationToken cancellationToken)
+        public async Task<Result> ForgotPasswordAsync(User user, CancellationToken cancellationToken)
         {
             //string token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
@@ -213,7 +211,7 @@ namespace RestApi.Identity.Services
             return Result.Create();
         }
 
-        public Task<Result> ResetPasswordAsync(RestApiUser user, string token, string password)
+        public Task<Result> ResetPasswordAsync(User user, string token, string password)
         {
             //var result = await _userManager.ResetPasswordAsync(user, token, password);
 

@@ -6,7 +6,7 @@ namespace RestApi.Domain.V1.Aggregates.Users.Repositories
     public interface IUserRepository : IRepository<User>
     {
         Task AddAsync(User user, CancellationToken cancellationToken);
-        Task<User> FindByEmailAsync(string email);
+        Task<User> FindByEmailAsync(string email, bool withPassword = false);
         Task<User> FindByIdAsync(string userId);
         Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id);
     }

@@ -22,13 +22,16 @@ namespace RestApi.Persistence.Repositories
             await connection.InsertAsync(user);
         }
 
-        public async Task<User> FindByEmailAsync(string email)
+        public async Task<User> FindByEmailAsync(string email, bool withPassword = false)
         {
-            string sql = @"
-                SELECT u.Id, u.FirstName, u.LastName, u.Email, u.PasswordHash
-                FROM Users u
-                WHERE u.Email = @Email
-            ";
+            string sql = "SELECT u.Id, u.FirstName, u.LastName, u.Email";
+
+            if (withPassword)
+            {
+                sql = $"{sql}, u.PasswordHash";
+            }
+
+            sql = $"{sql} FROM Users u WHERE u.Email = @Email";
 
             using var connection = _context.CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
