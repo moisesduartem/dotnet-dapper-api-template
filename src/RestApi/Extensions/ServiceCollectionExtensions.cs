@@ -1,17 +1,15 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using RestApi.Application.Models;
 using RestApi.Application.V1.Services;
 using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Filters;
 using RestApi.Identity.Extensions;
 using RestApi.Identity.Services;
+using RestApi.Persistence.Context;
 using RestApi.Persistence.Repositories;
 
 namespace RestApi.Extensions
@@ -97,9 +95,20 @@ namespace RestApi.Extensions
             return services;
         }
 
+        public static IServiceCollection AddDapperConfiguration(this IServiceCollection services)
+        {
+            services.AddSingleton<RestApiContext>();
+
+            return services;
+        }
+
         public static IServiceCollection AddJWTConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
-            return services.AddJsonWebTokenAuthentication(configuration);
+            services.AddHttpContextAccessor();
+
+            services.AddJsonWebTokenAuthentication(configuration);
+
+            return services;
         }
 
         public static IServiceCollection AddFluentValidationConfiguration(this IServiceCollection services)

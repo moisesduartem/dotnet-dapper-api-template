@@ -10,6 +10,8 @@ builder.Services.AddControllersConfiguration();
 
 builder.Services.AddDIConfiguration();
 
+builder.Services.AddDapperConfiguration();
+
 builder.Services.AddJWTConfiguration(builder.Configuration);
 
 builder.Services.AddEmailSenderConfiguration(builder.Configuration);

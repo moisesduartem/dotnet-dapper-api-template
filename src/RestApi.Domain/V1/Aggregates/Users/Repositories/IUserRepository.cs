@@ -5,5 +5,6 @@ namespace RestApi.Domain.V1.Aggregates.Users.Repositories
 {
     public interface IUserRepository : IRepository<User>
     {
+        Task AddAsync(User user, CancellationToken cancellationToken);
     }
 }
