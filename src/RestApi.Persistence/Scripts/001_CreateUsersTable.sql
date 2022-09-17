@@ -10,7 +10,7 @@ CREATE TABLE [Users] (
 	[Id] UNIQUEIDENTIFIER DEFAULT NEWID(),
 	[FirstName] VARCHAR(25) NOT NULL,
 	[LastName] VARCHAR(30) NOT NULL,
-	[Email] VARCHAR(60) NOT NULL,
+	[Email] VARCHAR(60) UNIQUE NOT NULL,
 	[Birthdate] DATE NOT NULL,
 	[PasswordHash] CHAR(84) NOT NULL,
 	[EmailConfirmed] BIT DEFAULT 0,
@@ -23,6 +23,6 @@ CREATE TABLE [Users] (
 
 GO
 
-CREATE INDEX [IX_Users_Email] ON [Users]([Email])
+CREATE UNIQUE INDEX [IX_Users_Email] ON [Users]([Email])
 
 GO
