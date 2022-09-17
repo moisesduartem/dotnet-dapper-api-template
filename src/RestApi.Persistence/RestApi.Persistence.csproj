@@ -22,4 +22,8 @@
     <ProjectReference Include="..\RestApi.Identity\RestApi.Identity.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Scripts\" />
+  </ItemGroup>
+
 </Project>
