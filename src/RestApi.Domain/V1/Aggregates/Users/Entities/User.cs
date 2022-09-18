@@ -31,6 +31,11 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
             ResetPasswordExpiration = DateTime.Now.AddHours(24);
         }
 
+        public void ClearResetPassword() {
+            ResetPasswordCode = null;
+            ResetPasswordExpiration = null;
+        }
+
         public void SetPassword(string hash)
         {
             PasswordHash = hash;

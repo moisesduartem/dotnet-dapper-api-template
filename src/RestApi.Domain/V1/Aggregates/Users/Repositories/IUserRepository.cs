@@ -10,5 +10,6 @@ namespace RestApi.Domain.V1.Aggregates.Users.Repositories
         Task<User> FindByIdAsync(string userId);
         Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id);
         Task UpdateResetPasswordCodeAsync(User user);
+        Task UpdatePasswordAsync(User user);
     }
 }

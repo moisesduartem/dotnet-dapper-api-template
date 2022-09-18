@@ -58,7 +58,7 @@ namespace RestApi.Identity.Services
             {
                 var claimsPrincipal = _httpContextAccessor?.HttpContext?.User;
 
-                string? userId = 
+                string? userId =
                     claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 var user = await _userRepository.FindByIdAsync(userId);
@@ -76,18 +76,18 @@ namespace RestApi.Identity.Services
         {
             var hasher = new PasswordHasher<User?>();
 
-            var user = await _userRepository.FindByEmailAsync(query.Email);
+            var user = await _userRepository.FindByEmailAsync(query.Email, withPassword: true);
 
             if (user is null)
             {
                 var result = new LoginDTO();
-                
+
                 result.AddError("Invalid Credentials");
-                
+
                 return result;
             }
 
-            var hashVerification = 
+            var hashVerification =
                 hasher.VerifyHashedPassword(user, user.PasswordHash, query.Password);
 
             if (hashVerification is not PasswordVerificationResult.Success)
@@ -212,19 +212,32 @@ namespace RestApi.Identity.Services
             return Result.Create();
         }
 
-        public Task<Result> ResetPasswordAsync(User user, string token, string password)
+        public async Task<Result> ResetPasswordAsync(User user, string token, string password)
         {
-            //var result = await _userManager.ResetPasswordAsync(user, token, password);
+            bool isExpired = DateTime.Now.CompareTo(user.ResetPasswordExpiration) >= 0;
+            bool isCorrect = user.ResetPasswordCode == token;
 
-            // replace with new user references
+            if (!isCorrect)
+            {
+                return Result.Create().Error("Invalid token");
+            }
 
-            return Task.FromResult(Result.Create());
-            //if (result.Succeeded)
-            //{
-            //    return Result.Create();
-            //}
+            if (isExpired)
+            {
+                return Result.Create().Error("Expired token");
+            }
 
-            //return Result.Create().Error(result.Errors.Select(x => x.Description));
+            user.ClearResetPassword();
+
+            var hasher = new PasswordHasher<User>();
+
+            string hash = hasher.HashPassword(user, password);
+
+            user.SetPassword(hash);
+
+            await _userRepository.UpdatePasswordAsync(user);
+
+            return Result.Create();
         }
     }
 }

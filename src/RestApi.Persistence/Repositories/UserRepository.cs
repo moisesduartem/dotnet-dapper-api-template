@@ -24,7 +24,10 @@ namespace RestApi.Persistence.Repositories
 
         public async Task<User> FindByEmailAsync(string email, bool withPassword = false)
         {
-            string sql = "SELECT u.Id, u.FirstName, u.LastName, u.Email";
+            string sql = 
+                @"SELECT 
+                    u.Id, u.FirstName, u.LastName, 
+                    u.Email, u.ResetPasswordCode, u.ResetPasswordExpiration";
 
             if (withPassword)
             {
@@ -60,6 +63,26 @@ namespace RestApi.Persistence.Repositories
 
             using var connection = _context.CreateConnection();
             return await connection.QueryAsync<string>(sql, new { UserId = id });
+        }
+
+        public async Task UpdatePasswordAsync(User user)
+        {
+            string sql = @"
+                UPDATE 
+                    Users 
+                SET 
+                    PasswordHash = @Hash,
+                    ResetPasswordCode = @Code,
+                    ResetPasswordExpiration = @Expiration 
+                WHERE Id = @UserId";
+
+            using var connection = _context.CreateConnection();
+            await connection.ExecuteAsync(sql, new { 
+                UserId = user.Id, 
+                Hash = user.PasswordHash,
+                Code = user.ResetPasswordCode, 
+                Expiration = user.ResetPasswordExpiration 
+            });
         }
 
         public async Task UpdateResetPasswordCodeAsync(User user)
