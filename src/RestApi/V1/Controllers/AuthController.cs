@@ -13,18 +13,18 @@ namespace RestApi.V1.Controllers
     [Route("api/v1/auth")]
     public class AuthController : ControllerBase
     {
-        private readonly IIdentityService _identityService;
+        private readonly IAuthService _authService;
 
-        public AuthController(IIdentityService identityService)
+        public AuthController(IAuthService identityService)
         {
-            _identityService = identityService;
+            _authService = identityService;
         }
 
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(LoginQuery query)
         {
-            var result = await _identityService.LoginAsync(query);
+            var result = await _authService.LoginAsync(query);
 
             return result.Match(
                 onValue: value => (IActionResult)Ok(value),
@@ -36,7 +36,7 @@ namespace RestApi.V1.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterUserCommand command, CancellationToken cancellationToken)
         {
-            var result = await _identityService.RegisterAsync(command, cancellationToken);
+            var result = await _authService.RegisterAsync(command, cancellationToken);
 
             return result.Match(
                 onValue: value => (IActionResult)StatusCode(StatusCodes.Status201Created),
@@ -48,14 +48,14 @@ namespace RestApi.V1.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command, CancellationToken cancellationToken)
         {
-            var user = await _identityService.FindUserByEmailAsync(command.Email);
+            var user = await _authService.FindUserByEmailAsync(command.Email);
 
             if (user is null)
             {
                 return NotFound();
             }
 
-            var result = await _identityService.ForgotPasswordAsync(user, cancellationToken);
+            var result = await _authService.ForgotPasswordAsync(user, cancellationToken);
 
             return result.Match(
                 onValue: value => (IActionResult)NoContent(),
@@ -67,14 +67,14 @@ namespace RestApi.V1.Controllers
         [Authorize]
         public async Task<IActionResult> ConfirmEmail(ConfirmEmailCommand command)
         {
-            var user = await _identityService.FindUserByEmailAsync(command.Email);
+            var user = await _authService.FindUserByEmailAsync(command.Email);
 
             if (user is null)
             {
                 return NotFound();
             }
 
-            var result = await _identityService.ConfirmEmailAsync(user, command.Token);
+            var result = await _authService.ConfirmEmailAsync(user, command.Token);
 
             return result.Match(
                 onValue: value => (IActionResult)NoContent(),
@@ -86,14 +86,14 @@ namespace RestApi.V1.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordCommand command)
         {
-            var user = await _identityService.FindUserByEmailAsync(command.Email);
+            var user = await _authService.FindUserByEmailAsync(command.Email);
 
             if (user is null)
             {
                 return NotFound();
             }
 
-            var result = await _identityService.ResetPasswordAsync(user, command.Token, command.Password);
+            var result = await _authService.ResetPasswordAsync(user, command.Token, command.Password);
 
             return result.Match(
                 onValue: value => (IActionResult)NoContent(),
@@ -105,7 +105,7 @@ namespace RestApi.V1.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var result = await _identityService.GetLoggedUserAsync();
+            var result = await _authService.GetLoggedUserAsync();
 
             return result.Match(
                 onValue: value => (IActionResult)Ok(value),

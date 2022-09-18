@@ -9,15 +9,15 @@ using RestApi.Application.V1.Configuration;
 using RestApi.Application.V1.Services;
 using RestApi.Domain.V1.Aggregates.Users.Entities;
 using RestApi.Domain.V1.Aggregates.Users.Repositories;
-using RestApi.Identity.Configuration;
+using RestApi.Auth.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ErrorOr;
 
-namespace RestApi.Identity.Services
+namespace RestApi.Auth.Services
 {
-    public class IdentityService : IIdentityService
+    public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
         private readonly JwtOptions _jwtOptions;
@@ -25,7 +25,7 @@ namespace RestApi.Identity.Services
         private readonly IMailService _mailService;
         private readonly IMapper _mapper;
 
-        public IdentityService(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IMailService mailService, IMapper mapper)
+        public AuthService(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IMailService mailService, IMapper mapper)
         {
             _userRepository = userRepository;
             _jwtOptions = jwtOptions.Value;

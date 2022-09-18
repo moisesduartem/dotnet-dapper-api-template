@@ -2,10 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using RestApi.Identity.Configuration;
+using RestApi.Auth.Configuration;
 using System.Text;
 
-namespace RestApi.Identity.Extensions
+namespace RestApi.Auth.Extensions
 {
     public static class ServiceCollectionExtensions
     {

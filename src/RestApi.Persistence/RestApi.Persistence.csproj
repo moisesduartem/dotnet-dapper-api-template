@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RestApi.Domain\RestApi.Domain.csproj" />
-    <ProjectReference Include="..\RestApi.Identity\RestApi.Identity.csproj" />
+    <ProjectReference Include="..\RestApi.Auth\RestApi.Auth.csproj" />
   </ItemGroup>
 
   <ItemGroup>

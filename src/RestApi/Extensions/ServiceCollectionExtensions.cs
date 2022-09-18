@@ -7,8 +7,8 @@ using Microsoft.OpenApi.Models;
 using RestApi.Application.V1.Services;
 using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Filters;
-using RestApi.Identity.Extensions;
-using RestApi.Identity.Services;
+using RestApi.Auth.Extensions;
+using RestApi.Auth.Services;
 using RestApi.Persistence.Context;
 using RestApi.Persistence.Repositories;
 
@@ -90,7 +90,7 @@ namespace RestApi.Extensions
         {
             services.AddScoped<IUserRepository, UserRepository>();
 
-            services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             return services;
         }

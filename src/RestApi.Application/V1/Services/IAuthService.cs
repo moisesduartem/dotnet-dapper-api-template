@@ -6,7 +6,7 @@ using RestApi.Domain.V1.Aggregates.Users.Entities;
 
 namespace RestApi.Application.V1.Services
 {
-    public interface IIdentityService
+    public interface IAuthService
     {
         Task<ErrorOr<Success>> ConfirmEmailAsync(User user, string token);
         Task<User> FindUserByEmailAsync(string email);

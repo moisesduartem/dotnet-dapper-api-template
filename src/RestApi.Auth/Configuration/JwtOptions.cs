@@ -1,6 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 
-namespace RestApi.Identity.Configuration
+namespace RestApi.Auth.Configuration
 {
     public class JwtOptions
     {

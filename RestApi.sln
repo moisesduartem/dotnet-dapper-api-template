@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestApi.Domain.Tests", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestApi.Persistence", "src\RestApi.Persistence\RestApi.Persistence.csproj", "{3560D40B-9F5B-49F2-8E85-20C656F392A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestApi.Identity", "src\RestApi.Identity\RestApi.Identity.csproj", "{1D7F339C-8D42-4F5D-A99B-4194DF642A29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestApi.Auth", "src\RestApi.Auth\RestApi.Auth.csproj", "{1D7F339C-8D42-4F5D-A99B-4194DF642A29}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
