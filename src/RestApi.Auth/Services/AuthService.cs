@@ -19,14 +19,16 @@ namespace RestApi.Auth.Services
 {
     public class AuthService : IAuthService
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
         private readonly JwtOptions _jwtOptions;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMailService _mailService;
         private readonly IMapper _mapper;
 
-        public AuthService(IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IMailService mailService, IMapper mapper)
+        public AuthService(IUnitOfWork unitOfWork, IUserRepository userRepository, IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IMailService mailService, IMapper mapper)
         {
+            _unitOfWork = unitOfWork;
             _userRepository = userRepository;
             _jwtOptions = jwtOptions.Value;
             _httpContextAccessor = httpContextAccessor;
@@ -124,7 +126,11 @@ namespace RestApi.Auth.Services
 
             user.ConfigureEmailConfirmation(emailConfirmationCode);
 
+            _unitOfWork.BeginTransaction();
+
             await _userRepository.AddAsync(user, cancellationToken);
+
+            _unitOfWork.Commit();
 
             await SendVerificationEmailAsync(user, cancellationToken);
 
@@ -180,7 +186,11 @@ namespace RestApi.Auth.Services
 
             user.ConfirmEmail();
 
+            _unitOfWork.BeginTransaction();
+
             await _userRepository.ConfirmEmailAsync(user);
+
+            _unitOfWork.Commit();
 
             return Result.Success;
         }
@@ -191,7 +201,11 @@ namespace RestApi.Auth.Services
 
             user.ConfigureResetPassword(resetPasswordCode);
 
+            _unitOfWork.BeginTransaction();
+
             await _userRepository.UpdateResetPasswordCodeAsync(user);
+
+            _unitOfWork.Commit();
 
             var mailRequest = new MailRequest
             {
@@ -232,7 +246,11 @@ namespace RestApi.Auth.Services
 
             user.SetPassword(hash);
 
+            _unitOfWork.BeginTransaction();
+
             await _userRepository.UpdatePasswordAsync(user);
+
+            _unitOfWork.Commit();
 
             return Result.Success;
         }

@@ -64,7 +64,6 @@ namespace RestApi.V1.Controllers
         }
 
         [HttpPatch("confirm-email")]
-        [Authorize]
         public async Task<IActionResult> ConfirmEmail(ConfirmEmailCommand command)
         {
             var user = await _authService.FindUserByEmailAsync(command.Email);

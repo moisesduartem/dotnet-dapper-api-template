@@ -88,16 +88,16 @@ namespace RestApi.Extensions
 
         public static IServiceCollection AddDIConfiguration(this IServiceCollection services)
         {
-            services.AddScoped<IUserRepository, UserRepository>();
-
-            services.AddScoped<IAuthService, AuthService>();
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IAuthService, AuthService>();
 
             return services;
         }
 
         public static IServiceCollection AddDapperConfiguration(this IServiceCollection services)
         {
-            services.AddSingleton<RestApiContext>();
+            services.AddScoped<DbSession>();
 
             return services;
         }

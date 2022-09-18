@@ -8,36 +8,34 @@ namespace RestApi.Persistence.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly RestApiContext _context;
+        private readonly DbSession _session;
 
-        public UserRepository(RestApiContext context)
+        public UserRepository(DbSession context)
         {
-            _context = context;
+            _session = context;
         }
 
-        public async Task AddAsync(User user, CancellationToken cancellationToken)
+        public Task AddAsync(User user, CancellationToken cancellationToken)
         {
-            using var connection = _context.CreateConnection();
-            
-            await connection.InsertAsync(user);
+            return _session.Connection.InsertAsync(user, _session.Transaction);
         }
 
-        public async Task ConfirmEmailAsync(User user)
+        public Task ConfirmEmailAsync(User user)
         {
             string sql = @"
                 UPDATE 
                     Users 
                 SET 
                     EmailConfirmed = @EmailConfirmed,
-                    EmailConfirmationCode = @Code
-                WHERE Id = @UserId";
+                    EmailConfirmationCode = @EmailConfirmationCode
+                WHERE Id = @Id";
 
-            using var connection = _context.CreateConnection();
-            await connection.ExecuteAsync(sql, new { 
-                UserId = user.Id, 
-                Code = user.EmailConfirmationCode, 
-                EmailConfirmed = user.EmailConfirmed  
-            });
+            return _session.Connection.ExecuteAsync(sql, new { 
+                user.Id, 
+                user.EmailConfirmationCode,
+                user.EmailConfirmed  
+            }, 
+            _session.Transaction);
         }
 
         public async Task<User> FindByEmailAsync(string email, bool withPassword = false)
@@ -55,8 +53,7 @@ namespace RestApi.Persistence.Repositories
 
             sql = $"{sql} FROM Users u WHERE u.Email = @Email";
 
-            using var connection = _context.CreateConnection();
-            return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
+            return await _session.Connection.QueryFirstOrDefaultAsync<User>(sql, new { Email = email });
         }
 
         public async Task<User> FindByIdAsync(string userId)
@@ -67,8 +64,7 @@ namespace RestApi.Persistence.Repositories
                 WHERE u.Id = @Id
             ";
 
-            using var connection = _context.CreateConnection();
-            return await connection.QueryFirstOrDefaultAsync<User>(sql, new { Id = userId });
+            return await _session.Connection.QueryFirstOrDefaultAsync<User>(sql, new { Id = userId });
         }
 
         public async Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id)
@@ -80,8 +76,7 @@ namespace RestApi.Persistence.Repositories
                 WHERE u.Id = @UserId
                 ORDER BY r.Name ASC";
 
-            using var connection = _context.CreateConnection();
-            return await connection.QueryAsync<string>(sql, new { UserId = id });
+            return await _session.Connection.QueryAsync<string>(sql, new { UserId = id });
         }
 
         public async Task UpdatePasswordAsync(User user)
@@ -90,18 +85,18 @@ namespace RestApi.Persistence.Repositories
                 UPDATE 
                     Users 
                 SET 
-                    PasswordHash = @Hash,
-                    ResetPasswordCode = @Code,
-                    ResetPasswordExpiration = @Expiration 
-                WHERE Id = @UserId";
+                    PasswordHash = @PasswordHash,
+                    ResetPasswordCode = @ResetPasswordCode,
+                    ResetPasswordExpiration = @ResetPasswordExpiration 
+                WHERE Id = @Id";
 
-            using var connection = _context.CreateConnection();
-            await connection.ExecuteAsync(sql, new { 
-                UserId = user.Id, 
-                Hash = user.PasswordHash,
-                Code = user.ResetPasswordCode, 
-                Expiration = user.ResetPasswordExpiration 
-            });
+            await _session.Connection.ExecuteAsync(sql, new { 
+                user.Id, 
+                user.PasswordHash,
+                user.ResetPasswordCode, 
+                user.ResetPasswordExpiration 
+            }, 
+            _session.Transaction);
         }
 
         public async Task UpdateResetPasswordCodeAsync(User user)
@@ -110,16 +105,16 @@ namespace RestApi.Persistence.Repositories
                 UPDATE 
                     Users 
                 SET 
-                    ResetPasswordCode = @Code,
-                    ResetPasswordExpiration = @Expiration 
-                WHERE Id = @UserId";
+                    ResetPasswordCode = @ResetPasswordCode,
+                    ResetPasswordExpiration = @ResetPasswordExpiration 
+                WHERE Id = @Id";
 
-            using var connection = _context.CreateConnection();
-            await connection.ExecuteAsync(sql, new { 
-                UserId = user.Id, 
-                Code = user.ResetPasswordCode, 
-                Expiration = user.ResetPasswordExpiration 
-            });
+            await _session.Connection.ExecuteAsync(sql, new { 
+                user.Id, 
+                user.ResetPasswordCode, 
+                user.ResetPasswordExpiration 
+            },
+            _session.Transaction);
         }
     }
 }
