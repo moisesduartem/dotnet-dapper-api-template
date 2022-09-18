@@ -11,5 +11,6 @@ namespace RestApi.Domain.V1.Aggregates.Users.Repositories
         Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id);
         Task UpdateResetPasswordCodeAsync(User user);
         Task UpdatePasswordAsync(User user);
+        Task ConfirmEmailAsync(User user);
     }
 }

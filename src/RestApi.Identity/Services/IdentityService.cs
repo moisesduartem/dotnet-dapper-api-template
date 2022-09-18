@@ -179,18 +179,18 @@ namespace RestApi.Identity.Services
             return _userRepository.FindByEmailAsync(email);
         }
 
-        public Task<Result> ConfirmEmailAsync(User user, string token)
+        public async Task<Result> ConfirmEmailAsync(User user, string token)
         {
-            //var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (user.EmailConfirmationCode != token)
+            {
+                return Result.Create().Error("Invalid token");
+            }
 
-            //// replace with new user references
+            user.ConfirmEmail();
 
-            //if (result.Succeeded)
-            //{
-            return Task.FromResult(Result.Create());
-            //}
+            await _userRepository.ConfirmEmailAsync(user);
 
-            //return Result.Create().Error(result.Errors.Select(x => x.Description));
+            return Result.Create();
         }
 
         public async Task<Result> ForgotPasswordAsync(User user, CancellationToken cancellationToken)

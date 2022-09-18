@@ -28,6 +28,12 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
             EmailConfirmed = false;
         }
 
+        public void ConfirmEmail()
+        {
+            EmailConfirmationCode = null;
+            EmailConfirmed = true;
+        }
+
         public void ConfigureEmailConfirmation(string emailConfirmationCode)
         {
             EmailConfirmationCode = emailConfirmationCode;

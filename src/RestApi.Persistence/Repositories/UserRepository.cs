@@ -22,12 +22,31 @@ namespace RestApi.Persistence.Repositories
             await connection.InsertAsync(user);
         }
 
+        public async Task ConfirmEmailAsync(User user)
+        {
+            string sql = @"
+                UPDATE 
+                    Users 
+                SET 
+                    EmailConfirmed = @EmailConfirmed,
+                    EmailConfirmationCode = @Code
+                WHERE Id = @UserId";
+
+            using var connection = _context.CreateConnection();
+            await connection.ExecuteAsync(sql, new { 
+                UserId = user.Id, 
+                Code = user.EmailConfirmationCode, 
+                EmailConfirmed = user.EmailConfirmed  
+            });
+        }
+
         public async Task<User> FindByEmailAsync(string email, bool withPassword = false)
         {
             string sql = 
                 @"SELECT 
                     u.Id, u.FirstName, u.LastName, 
-                    u.Email, u.ResetPasswordCode, u.ResetPasswordExpiration";
+                    u.Email, u.ResetPasswordCode, u.ResetPasswordExpiration,
+                    u.EmailConfirmationCode";
 
             if (withPassword)
             {
