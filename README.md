@@ -53,9 +53,3 @@ These are the endpoints implemented in this API:
 - Get logged user profile
 - Verify if the logged user is admin
 - Verify if the user is authorized
-
-# Solution
-
-The .NET solution is structured according to the picture below
-
-![Solution Structure](docs/solution_structure.png)
