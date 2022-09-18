@@ -1,8 +1,6 @@
-﻿using RestApi.Application.V1.Shared;
-
-namespace RestApi.Application.V1.Aggregates.Users.DTOs
+﻿namespace RestApi.Application.V1.Aggregates.Users.DTOs
 {
-    public class LoginDTO : Result
+    public class LoginDTO
     {
         public LoggedUserDTO User { get; set; }
         public string Token { get; set; }

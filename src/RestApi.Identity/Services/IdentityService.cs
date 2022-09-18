@@ -7,13 +7,13 @@ using RestApi.Application.V1.Aggregates.Users.DTOs;
 using RestApi.Application.V1.Aggregates.Users.Queries;
 using RestApi.Application.V1.Configuration;
 using RestApi.Application.V1.Services;
-using RestApi.Application.V1.Shared;
 using RestApi.Domain.V1.Aggregates.Users.Entities;
 using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Identity.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ErrorOr;
 
 namespace RestApi.Identity.Services
 {
@@ -52,7 +52,7 @@ namespace RestApi.Identity.Services
             await _mailService.SendAsync(mailRequest, cancellationToken);
         }
 
-        public async Task<UserProfileDTO?> GetLoggedUserAsync()
+        public async Task<ErrorOr<UserProfileDTO>> GetLoggedUserAsync()
         {
             if (_httpContextAccessor.HttpContext is not null)
             {
@@ -69,10 +69,10 @@ namespace RestApi.Identity.Services
                 }
             }
 
-            return null;
+            return Error.NotFound();
         }
 
-        public async Task<LoginDTO> LoginAsync(LoginQuery query)
+        public async Task<ErrorOr<LoginDTO>> LoginAsync(LoginQuery query)
         {
             var hasher = new PasswordHasher<User?>();
 
@@ -80,11 +80,7 @@ namespace RestApi.Identity.Services
 
             if (user is null)
             {
-                var result = new LoginDTO();
-
-                result.AddError("Invalid Credentials");
-
-                return result;
+                return Error.Validation(description: "Invalid Credentials");
             }
 
             var hashVerification =
@@ -92,11 +88,7 @@ namespace RestApi.Identity.Services
 
             if (hashVerification is not PasswordVerificationResult.Success)
             {
-                var result = new LoginDTO();
-
-                result.AddError("Invalid Credentials");
-
-                return result;
+                return Error.Validation(description: "Invalid Credentials");
             }
 
             var expirationDate = DateTime.Now.AddSeconds(_jwtOptions.ExpirationInSeconds);
@@ -113,7 +105,7 @@ namespace RestApi.Identity.Services
             };
         }
 
-        public async Task<Result> RegisterAsync(RegisterUserCommand command, CancellationToken cancellationToken)
+        public async Task<ErrorOr<Created>> RegisterAsync(RegisterUserCommand command, CancellationToken cancellationToken)
         {
             var hasher = new PasswordHasher<User>();
 
@@ -136,7 +128,7 @@ namespace RestApi.Identity.Services
 
             await SendVerificationEmailAsync(user, cancellationToken);
 
-            return Result.Create();
+            return Result.Created;
         }
 
         private string GenerateJsonWebTokenAsync(IList<Claim> claims, DateTime expirationDate)
@@ -179,21 +171,21 @@ namespace RestApi.Identity.Services
             return _userRepository.FindByEmailAsync(email);
         }
 
-        public async Task<Result> ConfirmEmailAsync(User user, string token)
+        public async Task<ErrorOr<Success>> ConfirmEmailAsync(User user, string token)
         {
             if (user.EmailConfirmationCode != token)
             {
-                return Result.Create().Error("Invalid token");
+                return Error.Validation(description: "Invalid token");
             }
 
             user.ConfirmEmail();
 
             await _userRepository.ConfirmEmailAsync(user);
 
-            return Result.Create();
+            return Result.Success;
         }
 
-        public async Task<Result> ForgotPasswordAsync(User user, CancellationToken cancellationToken)
+        public async Task<ErrorOr<Success>> ForgotPasswordAsync(User user, CancellationToken cancellationToken)
         {
             string resetPasswordCode = GenerateRandomToken();
 
@@ -214,22 +206,22 @@ namespace RestApi.Identity.Services
 
             await _mailService.SendAsync(mailRequest, cancellationToken);
 
-            return Result.Create();
+            return Result.Success;
         }
 
-        public async Task<Result> ResetPasswordAsync(User user, string token, string password)
+        public async Task<ErrorOr<Success>> ResetPasswordAsync(User user, string token, string password)
         {
             bool isExpired = DateTime.Now.CompareTo(user.ResetPasswordExpiration) >= 0;
             bool isCorrect = user.ResetPasswordCode == token;
 
             if (!isCorrect)
             {
-                return Result.Create().Error("Invalid token");
+                return Error.Validation(description: "Invalid token");
             }
 
             if (isExpired)
             {
-                return Result.Create().Error("Expired token");
+                return Error.Validation(description: "Expired token");
             }
 
             user.ClearResetPassword();
@@ -242,7 +234,7 @@ namespace RestApi.Identity.Services
 
             await _userRepository.UpdatePasswordAsync(user);
 
-            return Result.Create();
+            return Result.Success;
         }
     }
 }

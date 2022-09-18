@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ErrorOr;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using RestApi.Application.V1.Shared;
 using System.Net;
 
 namespace RestApi.Filters
@@ -20,7 +20,7 @@ namespace RestApi.Filters
 
             _logger.LogCritical(context.Exception, "Failed to process the request");
 
-            var result = Result.Create().Error("Failed to process the request");
+            var result = Error.Failure(description: "Failed to process the request");
 
             context.Result = new ObjectResult(result)
             {

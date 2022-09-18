@@ -4,6 +4,7 @@ using RestApi.Application.V1.Aggregates.Users.Commands;
 using RestApi.Application.V1.Aggregates.Users.Constants;
 using RestApi.Application.V1.Aggregates.Users.Queries;
 using RestApi.Application.V1.Services;
+using RestApi.Application.V1.Shared;
 
 namespace RestApi.V1.Controllers
 {
@@ -25,12 +26,10 @@ namespace RestApi.V1.Controllers
         {
             var result = await _identityService.LoginAsync(query);
 
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-
-            return BadRequest(result);
+            return result.Match(
+                onValue: value => (IActionResult)Ok(value),
+                onError: errors => BadRequest(result.Format())
+            );
         }
 
         [HttpPost("register")]
@@ -39,14 +38,12 @@ namespace RestApi.V1.Controllers
         {
             var result = await _identityService.RegisterAsync(command, cancellationToken);
 
-            if (result.Success)
-            {
-                return StatusCode(StatusCodes.Status201Created);
-            }
-
-            return BadRequest(result);
+            return result.Match(
+                onValue: value => (IActionResult)StatusCode(StatusCodes.Status201Created),
+                onError: errors => BadRequest(result.Format())
+            );
         }
-        
+
         [HttpPost("forgot-password")]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command, CancellationToken cancellationToken)
@@ -60,12 +57,10 @@ namespace RestApi.V1.Controllers
 
             var result = await _identityService.ForgotPasswordAsync(user, cancellationToken);
 
-            if (result.Success)
-            {
-                return NoContent();
-            }
-
-            return BadRequest(result);
+            return result.Match(
+                onValue: value => (IActionResult)NoContent(),
+                onError: errors => BadRequest(result.Format())
+            );
         }
 
         [HttpPatch("confirm-email")]
@@ -81,12 +76,10 @@ namespace RestApi.V1.Controllers
 
             var result = await _identityService.ConfirmEmailAsync(user, command.Token);
 
-            if (result.Success)
-            {
-                return NoContent();
-            }
-
-            return BadRequest(result);
+            return result.Match(
+                onValue: value => (IActionResult)NoContent(),
+                onError: errors => BadRequest(result.Format())
+            );
         }
 
         [HttpPatch("reset-password")]
@@ -102,26 +95,22 @@ namespace RestApi.V1.Controllers
 
             var result = await _identityService.ResetPasswordAsync(user, command.Token, command.Password);
 
-            if (result.Success)
-            {
-                return NoContent();
-            }
-
-            return BadRequest(result);
+            return result.Match(
+                onValue: value => (IActionResult)NoContent(),
+                onError: errors => BadRequest(result.Format())
+            );
         }
 
         [HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var user = await _identityService.GetLoggedUserAsync();
+            var result = await _identityService.GetLoggedUserAsync();
 
-            if (user is not null)
-            {
-                return Ok(user);
-            }
-
-            return BadRequest(user);
+            return result.Match(
+                onValue: value => (IActionResult)Ok(value),
+                onError: errors => NotFound()
+            );
         }
 
         [HttpGet("is-admin")]
@@ -130,7 +119,7 @@ namespace RestApi.V1.Controllers
         {
             return NoContent();
         }
-        
+
         [HttpGet("is-logged")]
         [Authorize]
         public IActionResult VerifyRegularUser()
