@@ -4,7 +4,7 @@
     "classifications": ["Web", "WebAPI"],
     "identity": "RestApi",
     "name": "moisesduartem's Dapper REST API Template",
-    "shortName": "dapper-api",
+    "shortName": "dapperapi",
     "sourceName": "RestApi",
     "tags": {
         "language": "C#",
