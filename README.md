@@ -1,13 +1,13 @@
-# dotnet-ef-restapi-template
+# dotnet-dapper-api-template
 
 # Usage
 
 ```powershell
-git clone https://github.com/moisesduartem/dotnet-ef-restapi-template restapi/
+git clone https://github.com/moisesduartem/dotnet-dapper-api-template dapperapi/
 
-dotnet new --install restapi/ # install the template according to .template.config/template.json
+dotnet new --install dapperapi/ # install the template according to .template.config/template.json
 
-dotnet new restapi -o MyApp # create a new restapi solution for MyApp
+dotnet new dapperapi -o MyApp # create a new dapperapi solution for MyApp
 ```
 
 # Technologies
@@ -24,8 +24,10 @@ The relational database used to create this template was **Microsoft SQL Server 
 
 - Unit testing - **MSTest**
     - [https://docs.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-mstest](https://docs.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-mstest)
-- Object-Relational Mapper - **Entity Framework Core 6.0.8**
-    - [https://docs.microsoft.com/en-us/ef/core/](https://docs.microsoft.com/en-us/ef/core/)
+- MicroORM - **Dapper**
+    - [https://github.com/DapperLib/Dapper](https://github.com/DapperLib/Dapper)
+- Additional features - **Dapper.Contrib**
+    - [https://github.com/DapperLib/Dapper.Contrib](https://github.com/DapperLib/Dapper.Contrib)
 - Log library - **Serilog**
     - [https://serilog.net/](https://serilog.net/)
 - Authentication manager - **Identity**
@@ -50,7 +52,7 @@ These are the endpoints implemented in this API:
 - Confirm email
 - Get logged user profile
 - Verify if the logged user is admin
-- Verify if the user is Authorized
+- Verify if the user is authorized
 
 # Solution
 
