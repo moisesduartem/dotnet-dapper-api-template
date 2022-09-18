@@ -9,6 +9,8 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
         public string Email { get; private set; }
         public DateTime Birthdate { get; private set; }
         public string PasswordHash { get; private set; }
+        public bool EmailConfirmed { get; private set; }
+        public string? EmailConfirmationCode { get; private set; }
         public string? ResetPasswordCode { get; private set; }
         public DateTime? ResetPasswordExpiration { get; private set; }
 
@@ -23,6 +25,12 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
             LastName = lastName;
             Email = email;
             Birthdate = birthdate;
+            EmailConfirmed = false;
+        }
+
+        public void ConfigureEmailConfirmation(string emailConfirmationCode)
+        {
+            EmailConfirmationCode = emailConfirmationCode;
         }
 
         public void ConfigureResetPassword(string code) 

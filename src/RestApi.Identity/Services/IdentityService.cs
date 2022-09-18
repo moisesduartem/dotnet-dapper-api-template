@@ -34,19 +34,19 @@ namespace RestApi.Identity.Services
             _mapper = mapper;
         }
 
+        private string GenerateRandomToken()
+        {
+            string content = $"{DateTime.Now}_{Guid.NewGuid()}";
+            return Convert.ToBase64String(Encoding.ASCII.GetBytes(content));
+        }
+
         private async Task SendVerificationEmailAsync(User user, CancellationToken cancellationToken)
         {
-            //string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-
-            // replace with new user references
-
-            string token = "123";
-
             var mailRequest = new MailRequest
             {
                 ToEmail = user.Email,
                 Subject = "Confirm your email",
-                Body = $"Your confirmation token is: {token}"
+                Body = $"Your confirmation token is: {user.EmailConfirmationCode}"
             };
 
             await _mailService.SendAsync(mailRequest, cancellationToken);
@@ -128,7 +128,13 @@ namespace RestApi.Identity.Services
 
             user.SetPassword(hash);
 
+            string emailConfirmationCode = GenerateRandomToken();
+
+            user.ConfigureEmailConfirmation(emailConfirmationCode);
+
             await _userRepository.AddAsync(user, cancellationToken);
+
+            await SendVerificationEmailAsync(user, cancellationToken);
 
             return Result.Create();
         }
@@ -189,8 +195,7 @@ namespace RestApi.Identity.Services
 
         public async Task<Result> ForgotPasswordAsync(User user, CancellationToken cancellationToken)
         {
-            string content = $"{DateTime.Now}_{Guid.NewGuid()}";
-            string resetPasswordCode = Convert.ToBase64String(Encoding.ASCII.GetBytes(content));
+            string resetPasswordCode = GenerateRandomToken();
 
             user.ConfigureResetPassword(resetPasswordCode);
 
