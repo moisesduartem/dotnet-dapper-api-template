@@ -9,6 +9,8 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
         public string Email { get; private set; }
         public DateTime Birthdate { get; private set; }
         public string PasswordHash { get; private set; }
+        public string? ResetPasswordCode { get; private set; }
+        public DateTime? ResetPasswordExpiration { get; private set; }
 
         public User()
         {
@@ -21,6 +23,12 @@ namespace RestApi.Domain.V1.Aggregates.Users.Entities
             LastName = lastName;
             Email = email;
             Birthdate = birthdate;
+        }
+
+        public void ConfigureResetPassword(string code) 
+        {
+            ResetPasswordCode = code;
+            ResetPasswordExpiration = DateTime.Now.AddHours(24);
         }
 
         public void SetPassword(string hash)

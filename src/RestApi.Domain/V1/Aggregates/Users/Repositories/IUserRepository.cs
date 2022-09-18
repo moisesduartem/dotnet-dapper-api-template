@@ -9,5 +9,6 @@ namespace RestApi.Domain.V1.Aggregates.Users.Repositories
         Task<User> FindByEmailAsync(string email, bool withPassword = false);
         Task<User> FindByIdAsync(string userId);
         Task<IEnumerable<string>> GetRolesByUserIdAsync(Guid id);
+        Task UpdateResetPasswordCodeAsync(User user);
     }
 }

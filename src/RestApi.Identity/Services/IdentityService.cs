@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using RestApi.Application.Models;
 using RestApi.Application.V1.Aggregates.Users.Commands;
 using RestApi.Application.V1.Aggregates.Users.DTOs;
 using RestApi.Application.V1.Aggregates.Users.Queries;
@@ -14,6 +13,7 @@ using RestApi.Domain.V1.Aggregates.Users.Repositories;
 using RestApi.Identity.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace RestApi.Identity.Services
 {
@@ -189,11 +189,12 @@ namespace RestApi.Identity.Services
 
         public async Task<Result> ForgotPasswordAsync(User user, CancellationToken cancellationToken)
         {
-            //string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            string content = $"{DateTime.Now}_{Guid.NewGuid()}";
+            string resetPasswordCode = Convert.ToBase64String(Encoding.ASCII.GetBytes(content));
 
-            // replace with new user references
+            user.ConfigureResetPassword(resetPasswordCode);
 
-            string token = "asdlksadjlksa";
+            await _userRepository.UpdateResetPasswordCodeAsync(user);
 
             var mailRequest = new MailRequest
             {
@@ -202,7 +203,7 @@ namespace RestApi.Identity.Services
                 TemplatePath = "ResetPassword.cshtml",
                 TemplateModel = new
                 {
-                    Token = token
+                    Token = resetPasswordCode
                 }
             };
 
