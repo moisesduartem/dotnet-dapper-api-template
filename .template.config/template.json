@@ -10,19 +10,19 @@
         "language": "C#",
         "type": "solution"
     },
-    "preferNameDirectory": false,
+    "preferNameDirectory": true,
     "sources": [
-        {
-          "modifiers": [
-            {
-              "exclude": [
-                ".vs/**",
-                ".git/**",
-                "docs/**",
-                "README.md"
-              ]
-            }
-          ]
-        }
-      ]
+      {
+        "modifiers": [
+          {
+            "exclude": [
+              ".vs/**",
+              ".git/**",
+              "docs/**",
+              "README.md"
+            ]
+          }
+        ]
+      }
+    ]
 }
